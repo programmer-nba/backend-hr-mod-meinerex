@@ -7,13 +7,16 @@ const auth = require("../../lib/auth");
 const authAdmin = require("../../lib/authAdmin");
 
 
+//ใบแจ้งหนี้
+router.post('/invoice', ProjectController.createProject);
 
 router.get('/', ProjectController.getProjects);
 
 router.get('/:id', ProjectController.getProject);
 
 router.post('/', ProjectController.createProject);
-router.post('/:id/upload', ProjectController.uploadWorkImages);
+
+router.post('/upload/:id', ProjectController.uploadWorkImages);
 
 router.put('/:id/update', ProjectController.updateProject);
 router.put('/:id/submit', ProjectController.acceptProject);

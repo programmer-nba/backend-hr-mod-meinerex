@@ -1,3 +1,11 @@
 node_modules
 
 package-lock.json
+
+.env
+
+env
+
+controllers/Admin/*.json
+
+controllers/Admin/demofires-01-firebase-adminsdk-sbd7f-d13d9819fb.json

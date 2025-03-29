@@ -37,6 +37,7 @@ const RequestUpateTime = require('./routes/Time_to_Work/requesttime.route')
 const postType = require('./routes/Post/post.type')
 const recordType = require('./routes/Record/record.type')
 const recordFlow = require('./routes/Record/record.flow')
+const invoice = require('./routes/invoice')
 
 app.use(bodyParser.json({ limit: '50mb', type: 'application/json' }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -91,6 +92,8 @@ app.use(ddsc + '/exam', ExamRoute);
 app.use(ddsc + '/exam-type', ExamTypeRoutes);
 app.use(ddsc + '/examresults', ExamResultsRoutes);
 app.use(ddsc + '/contact', ContactRoutes)
+
+app.use(ddsc + '/invoice', invoice)
 
 // รับงาน
 app.use(ddsc + '/project', RequestProjectRoutes);

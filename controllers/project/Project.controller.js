@@ -1,40 +1,37 @@
 const { default: axios } = require("axios");
 const RequestProject = require("../../model/project/RequestProject.model");
+
 const dayjs = require("dayjs");
 
 
 exports.uploadWorkImages = async (req, res) => {
   try {
-    const { workId } = req.params;
-
-    // รับข้อมูลรูปภาพจาก body (base64 หรือ URL)
+    const { id } = req.params;
     const { img_surway, img_process, img_testing, img_deliverwork } = req.body;
 
-    // หาและอัปเดตข้อมูลใน DB
-    const updatedWork = await Work.findByIdAndUpdate(
-      workId,
-      {
-        ...(img_surway && { img_surway }),
-        ...(img_process && { img_process }),
-        ...(img_testing && { img_testing }),
-        ...(img_deliverwork && { img_deliverwork }),
-      },
-      { new: true }
-    );
+    console.log('id', id)
 
-    if (!updatedWork) {
-      return res.status(404).json({ message: "ไม่พบงานที่ต้องการอัปเดต" });
+    const project = await RequestProject.findById(id);
+
+    if (!project) {
+      return res.status(404).json({ message: "ไม่พบโปรเจคที่ต้องการอัปเดต" });
     }
 
-    res.json({
-      message: "อัปโหลดรูปสำเร็จ",
-      work: updatedWork,
-    });
+    project.img_surway = img_surway || project.img_surway;
+    project.img_process = img_process || project.img_process;
+    project.img_testing = img_testing || project.img_testing;
+    project.img_deliverwork = img_deliverwork || project.img_deliverwork;
+
+    await project.save();
+
+    res.json({ message: "อัปเดตรูปภาพสำเร็จ", project });
   } catch (error) {
-    console.error("เกิดข้อผิดพลาดในการอัปโหลดรูป:", error);
-    res.status(500).json({ message: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" });
+    console.error("เกิดข้อผิดพลาดในการอัปเดตรูปภาพ:", error);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการอัปเดตรูปภาพ" });
   }
 };
+
+
 //Get Projects
 exports.getProjects = async (req, res, next) => {
   try {
@@ -58,82 +55,64 @@ exports.createProject = async (req, res) => {
     const {
       code,
       title,
-      qty,
-      unit,
       projectType,
-      projectSubType,
-      dueDate,
-      refs,
       remark,
-      customer,
-      status,
-      permisses,
-      billNo,
       startDate,
-      detail,
-      employees,
-      sendAddress,
-      img_surway,
-      img_process,
-      img_testing,
-      img_deliverwork,
+      endDate,
+      location,
+      address,
+      province,
+      subdistrict,
+      district,
+      postcode,
     } = req.body;
-    const projects = await RequestProject.find();
-    let projectNumber = 0;
-    if (!projects.length) {
-      projectNumber = 1;
-    } else {
-      const latestProject = projects[projects.length - 1];
-      projectNumber = parseInt(latestProject.code.slice(7)) + 1;
+
+    console.log("reqbody : ", req.body);
+
+    const currentYearMonth = dayjs().format("YYYYMM");
+
+    const lastProject = await RequestProject.findOne(
+      { code: new RegExp(`^${code}${currentYearMonth}`) },
+      {},
+      { sort: { code: -1 } } 
+    );
+
+    let sequenceNumber = "000001"; 
+
+    if (lastProject) {
+      const lastSequence = parseInt(lastProject.code.slice(-6), 10);
+      sequenceNumber = String(lastSequence + 1).padStart(6, "0");
     }
 
-    const projectNumberString =
-      code + projectNumber.toString().padStart(6, "0");
-    const defaultPermiss = [];
-    const permiss =
-      permisses && permisses.length ? [...permisses] : defaultPermiss;
+    const projectNumberString = `${projectType}${currentYearMonth}${sequenceNumber}`;
+
     const project = new RequestProject({
       code: projectNumberString,
       title: title,
       projectType: projectType,
-      projectSubType: projectSubType,
-      detail: detail,
       startDate: startDate,
-      dueDate: dueDate,
-      refs: refs,
-      billNo: billNo,
+      endDate: endDate,
       remark: remark,
-      customer: customer || {
-        _id: "",
-        name: "",
-        customerType: "",
-        customerTel: "",
-      },
-      status: status,
-      permisses: permiss,
-      employees: employees,
-      sendAddress: sendAddress,
-      qty: qty,
-      unit: unit,
+      location: location,
+      address: address,
+      subdistrict: subdistrict,
+      district: district,
+      province: province,
+      postcode: postcode,
       status: {
         name: "รอรับงาน",
-        timestamp: dayjs(Date.now()).format(""),
+        timestamp: dayjs().format(),
       },
-      img_surway: img_surway,
-      img_process: img_process,
-      img_testing: img_testing,
-      img_deliverwork: img_deliverwork,
     });
 
-    // บันทึกเอกสาร
     const saved_project = await project.save();
     if (!saved_project) {
       return res.status(400).json({
-        message: "can not save new project",
+        message: "ไม่สามารถบันทึกโครงการใหม่ได้",
       });
     }
     return res.status(200).json({
-      message: "success!",
+      message: "สร้างโครงการสำเร็จ!",
       status: true,
       data: saved_project,
     });
@@ -222,18 +201,15 @@ exports.updateProject = async (req, res) => {
     const id = req.params.id;
     const project = await RequestProject.findOne({ _id: id });
 
-    // 🔍 ตรวจสอบว่าเจอโปรเจคหรือไม่
     if (!project) {
       return res
         .status(404)
         .json({ status: false, message: "Project not found" });
     }
 
-    // 🔍 ป้องกันค่า undefined
     if (!project.status) project.status = [];
     if (!project.employees) project.employees = [];
 
-    // 🔍 อัพเดทสถานะและพนักงาน
     project.status.push({
       name: "กำลังดำเนินการ",
       timestamp: dayjs(Date.now()).format(""),
@@ -241,7 +217,6 @@ exports.updateProject = async (req, res) => {
 
     project.employees.push(req.body.employees);
 
-    // 🔍 บันทึกลง MongoDB
     await project.save();
 
     console.log("✅ อัพเดทโปรเจคสำเร็จ");
@@ -292,9 +267,8 @@ exports.getProject = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 🔍 ดึงโปรเจค และรวมข้อมูลพนักงาน (`populate`)
     const project = await RequestProject.findById(id).populate("employees");
-    
+
     if (!project) {
       return res.status(404).json({
         message: "not found",
@@ -388,6 +362,51 @@ module.exports.cancelProjectShop = async (req, res) => {
   }
 };
 
+//invoice
+exports.createInvoice = async (req, res) => {
+  try {
+    const {
+      code,
+      title,
+      projectType,
+      remark,
+      startDate,
+      endDate,
+      location,
+      address,
+      province,
+      subdistrict,
+      district,
+      postcode,
+    } = req.body;
+
+    console.log("reqbody : ", req.body);
+
+    const project = new RequestProject({
+      code: projectNumberString,
+
+    });
+
+    // บันทึกเอกสาร
+    const saved_project = await project.save();
+    if (!saved_project) {
+      return res.status(400).json({
+        message: "ไม่สามารถบันทึกโครงการใหม่ได้",
+      });
+    }
+    return res.status(200).json({
+      message: "สร้างโครงการสำเร็จ!",
+      status: true,
+      data: saved_project,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: err.message,
+    });
+  }
+};
+
 async function GenerateProjectNumber() {
   const pipelint = [
     {
@@ -401,3 +420,4 @@ async function GenerateProjectNumber() {
     .padStart(3, "0")}`;
   return data;
 }
+
