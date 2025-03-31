@@ -7,7 +7,7 @@ const dayjs = require("dayjs");
 exports.uploadWorkImages = async (req, res) => {
   try {
     const { id } = req.params;
-    const { img_surway, img_process, img_testing, img_deliverwork } = req.body;
+    const { img_surway, img_process, img_testing, img_deliverwork, receipt } = req.body;
 
     console.log('id', id)
 
@@ -21,6 +21,7 @@ exports.uploadWorkImages = async (req, res) => {
     project.img_process = img_process || project.img_process;
     project.img_testing = img_testing || project.img_testing;
     project.img_deliverwork = img_deliverwork || project.img_deliverwork;
+    project.receipt = receipt || project.receipt;
 
     await project.save();
 

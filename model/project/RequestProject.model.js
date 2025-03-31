@@ -43,6 +43,8 @@ const RequestProjectSchema = new mongoose.Schema(
     district: { type: String, required: false, default: "" },
     province: { type: String, required: false, default: "" },
     postcode: { type: String, required: false, default: "" },
+    //ใบเสร็จรับเงิน
+    receipt: { type: String, required: false, default: "" },
   },
   { timestamps: true }
 );
