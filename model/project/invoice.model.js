@@ -8,8 +8,8 @@ const InvoiceSchema = new mongoose.Schema({
     totalAmount: { type : Number, required : false},
     image: { type: String, required: false, default: "" },
     remark: { type: String, required: false, default: "" },
-
-});
+    projectId: { type: String, required: false, default: "" }, 
+}, { timestamps: true });
 
 const invoice = mongoose.model("invoices", InvoiceSchema)
 module.exports = invoice

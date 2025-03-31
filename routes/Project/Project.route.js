@@ -11,6 +11,7 @@ const authAdmin = require("../../lib/authAdmin");
 router.post('/invoice', ProjectController.createProject);
 
 router.get('/', ProjectController.getProjects);
+router.get('/em/:employee' , ProjectController.getRequestsByEmployee)
 
 router.get('/:id', ProjectController.getProject);
 

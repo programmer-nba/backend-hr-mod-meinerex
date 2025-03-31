@@ -18,18 +18,20 @@ exports.getInvoice = async (req, res, next) => {
 
 exports.createInvoice = async (req, res, next) => {
     try {
-        const { title, firstname, lastname, totalAmount, image, remark } = req.body;
-
+        const { date, title, firstname, lastname, totalAmount, image,projectId,  remark } = req.body;
+        console.log('reabody : ' , req.body)
         // ตรวจสอบข้อมูลที่จำเป็น
         if (!firstname || !lastname || !totalAmount) {
             return res.status(400).json({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
         }
 
         const newInvoice = new invoice({
+            date,
             title,
             firstname,
             lastname,
             totalAmount,
+            projectId,
             image,
             remark
         });

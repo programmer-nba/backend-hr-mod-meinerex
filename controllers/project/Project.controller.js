@@ -49,13 +49,25 @@ exports.getProjects = async (req, res, next) => {
   }
 };
 
+exports.getRequestsByEmployee = async (req, res, next) => {
+  try {
+    const { employee } = req.params;
+    console.log('em : ' , employee)
+
+    // ค้นหา RequestProject ที่มี employeeId อยู่ใน array ของ employees
+    const projects = await RequestProject.find({ employees: employee });
+
+    res.status(200).json(projects);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 //Insert a new Project
 exports.createProject = async (req, res) => {
   try {
     const {
-      code,
       title,
-      projectType,
       remark,
       startDate,
       endDate,
@@ -70,14 +82,16 @@ exports.createProject = async (req, res) => {
     console.log("reqbody : ", req.body);
 
     const currentYearMonth = dayjs().format("YYYYMM");
+    const projectType = "PJ";
 
+    // ค้นหาโครงการล่าสุดที่มีรหัสขึ้นต้นด้วย PJ + ปีเดือน
     const lastProject = await RequestProject.findOne(
-      { code: new RegExp(`^${code}${currentYearMonth}`) },
+      { code: new RegExp(`^${projectType}${currentYearMonth}`) },
       {},
-      { sort: { code: -1 } } 
+      { sort: { code: -1 } }
     );
 
-    let sequenceNumber = "000001"; 
+    let sequenceNumber = "000001"; // เริ่มต้นที่ 000001
 
     if (lastProject) {
       const lastSequence = parseInt(lastProject.code.slice(-6), 10);
@@ -88,17 +102,16 @@ exports.createProject = async (req, res) => {
 
     const project = new RequestProject({
       code: projectNumberString,
-      title: title,
-      projectType: projectType,
-      startDate: startDate,
-      endDate: endDate,
-      remark: remark,
-      location: location,
-      address: address,
-      subdistrict: subdistrict,
-      district: district,
-      province: province,
-      postcode: postcode,
+      title,
+      startDate,
+      endDate,
+      remark,
+      location,
+      address,
+      subdistrict,
+      district,
+      province,
+      postcode,
       status: {
         name: "รอรับงาน",
         timestamp: dayjs().format(),
