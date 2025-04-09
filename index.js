@@ -11,6 +11,7 @@ var logger = require('morgan');
 //กำหนดตัวแปร และดึง Route <=
 const EmployeesRoutes = require('./routes/Employees/employees.route');
 const RecordsRoutes = require('./routes/Record/record.route');
+const corporationRoutes = require('./routes/corporation.route');
 const TimeInOut = require('./routes/Time_to_Work/timetowork.route');
 const LeaveRoutes = require('./routes/Leave/leave.route');
 const PartnerRoutes = require('./routes/Partner/partner.route')
@@ -59,6 +60,7 @@ const ddsc = '/ddsc-office'
 app.use(ddsc, EmployeesRoutes);
 app.use(ddsc, require('./routes/event/marquee.route'));
 app.use(ddsc, RecordsRoutes);
+app.use(ddsc, corporationRoutes);
 app.use(ddsc, recordType);
 app.use(ddsc, recordFlow);
 app.use(ddsc, TimeInOut);
