@@ -40,6 +40,8 @@ const recordType = require('./routes/Record/record.type')
 const recordFlow = require('./routes/Record/record.flow')
 const invoice = require('./routes/invoice')
 const deposit = require('./routes/Deposit');
+const Salary = require('./routes/Salary/salary.route')
+
 
 app.use(bodyParser.json({ limit: '50mb', type: 'application/json' }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -64,8 +66,11 @@ app.use(ddsc, corporationRoutes);
 app.use(ddsc, recordType);
 app.use(ddsc, recordFlow);
 app.use(ddsc, TimeInOut);
+app.use(ddsc, Salary);
 app.use(ddsc + '/request', RequestUpateTime);
 app.use(ddsc + '/role', Role);
+
+
 
 //ภายใน
 app.use(ddsc + '/leave', LeaveRoutes);
